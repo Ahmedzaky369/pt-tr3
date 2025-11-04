@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>P Tracker</title>
+    <meta name="description" content="Track your bathroom visits and analyze patterns">
+    <meta name="theme-color" content="#3b82f6">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #e0f2fe 0%, #a5f3fc 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #1e40af;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+        
+        h2 {
+            color: #1e40af;
+            margin: 20px 0 15px;
+            font-size: 22px;
+        }
+        
+        h3 {
+            color: #2563eb;
+            margin: 15px 0 10px;
+            font-size: 18px;
+        }
+        
+        .btn-pee {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            border: none;
+            padding: 0;
+            width: 120px;
+            height: 120px;
+            font-size: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-pee:hover {
+            background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-pee:active {
+            transform: translateY(0);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid #e5e7eb;
+            margin: 30px 0 20px;
+            overflow-x: auto;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #64748b;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+        
+        .tab:hover {
+            color: #3b82f6;
+        }
+        
+        .tab.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+            font-weight: 600;
+        }
+        
+        .entry {
+            background: #f8fafc;
+            padding: 18px;
+            border-radius: 12px;
+            margin: 12px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+        
+        .entry:hover {
+            background: #f1f5f9;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .entry-info {
+            flex: 1;
+        }
+        
+        .entry-time {
+            font-weight: 600;
+            font-size: 16px;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        
+        .entry-interval {
+            font-size: 13px;
+            color: #64748b;
+        }
+        
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-delete:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+        }
+        
+        .empty {
+            text-align: center;
+            color: #94a3b8;
+            padding: 50px 20px;
+            font-size: 16px;
+        }
+        
+        .history-day {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .history-date {
+            font-weight: 600;
+            font-size: 18px;
+            color: #1e40af;
+            margin-bottom: 12px;
+        }
+        
+        .history-stats {
+            display: flex;
+            gap: 25px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        
+        .history-stat {
+            text-align: center;
+            min-width: 60px;
+        }
+        
+        .history-stat-num {
+            font-size: 26px;
+            font-weight: bold;
+            color: #0369a1;
+        }
+        
+        .history-stat-label {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+        
+        .analysis-section {
+            margin: 25px 0;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 15px;
+        }
+        
+        canvas {
+            max-width: 100%;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .summary-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .summary-label {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+        
+        .summary-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e40af;
+        }
+
+        .btn-reset {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 10px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-reset:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 26px;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-pee {
+                width: 100px;
+                height: 100px;
+                font-size: 40px;
+            }
+            
+            .history-stats {
+                justify-content: center;
+            }
+        }
+        
+        .view-container {
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>P Tracker</h1>
+
+        <button class="btn-pee" onclick="logPee()">💧</button>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number" id="todayCount">0</div>
+                <div class="stat-label">Today's Count</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="avgMinutes">0</div>
+                <div class="stat-label">Avg Minutes</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="daysTracked">0</div>
+                <div class="stat-label">Days Tracked</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('log', event)">Log</button>
+            <button class="tab" onclick="showTab('history', event)">History</button>
+            <button class="tab" onclick="showTab('analysis', event)">Analysis</button>
+        </div>
+
+        <div id="logView" class="view-container">
+            <h2>Today's Entries</h2>
+            <div id="entriesList"></div>
+        </div>
+
+        <div id="historyView" class="view-container" style="display: none;">
+            <h2>Previous Days</h2>
+            <div id="historyList"></div>
+        </div>
+
+        <div id="analysisView" class="view-container" style="display: none;">
+            <h2>Weekly & Monthly Analysis</h2>
+            <div class="analysis-section">
+                <h3>Weekly – Last 7 Days</h3>
+                <div class="chart-container">
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+            </div>
+            <div class="analysis-section">
+                <h3>Monthly – Last 30 Days</h3>
+                <div class="chart-container">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+            </div>
+            <div class="analysis-section">
+                <h3>Summary</h3>
+                <div id="analysisSummary" class="summary-stats"></div>
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn-reset" onclick="resetAllData()">🗑️ Reset All Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+    <script>
+        let entries = [];
+        let currentView = 'log';
+        let weeklyChart = null;
+        let monthlyChart = null;
+
+        function loadEntries() {
+            try {
+                const saved = localStorage.getItem('pee-entries');
+                if (saved) {
+                    entries = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.log('No saved entries');
+            }
+            updateDisplay();
+        }
+
+        function saveEntries() {
+            try {
+                localStorage.setItem('pee-entries', JSON.stringify(entries));
+            } catch (e) {
+                console.error('Failed to save');
+            }
+        }
+
+        function getCustomDay(date) {
+            const d = new Date(date);
+            const hours = d.getHours();
+            if (hours < 7) {
+                const adjusted = new Date(d);
+                adjusted.setDate(adjusted.getDate() - 1);
+                return adjusted.toLocaleDateString();
+            }
+            return d.toLocaleDateString();
+        }
+
+        function isToday(timestamp) {
+            return getCustomDay(timestamp) === getCustomDay(new Date());
+        }
+
+        function logPee() {
+            const now = new Date();
+            const entry = {
+                id: Date.now(),
+                timestamp: now.toISOString(),
+                customDay: getCustomDay(now),
+                time: now.toLocaleTimeString()
+            };
+            entries.push(entry);
+            entries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            saveEntries();
+            updateDisplay();
+            if (currentView === 'analysis') {
+                renderAnalysisCharts();
+            }
+        }
+
+        function deleteEntry(id) {
+            if (confirm('Delete this entry?')) {
+                entries = entries.filter(e => e.id !== id);
+                saveEntries();
+                updateDisplay();
+                if (currentView === 'analysis') {
+                    renderAnalysisCharts();
+                }
+            }
+        }
+
+        function getTodayEntries() {
+            return entries.filter(e => isToday(e.timestamp));
+        }
+
+        function calculateIntervals(entryList) {
+            if (entryList.length < 2) return [];
+            const sorted = [...entryList].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            const intervals = [];
+            for (let i = 1; i < sorted.length; i++) {
+                const prev = new Date(sorted[i - 1].timestamp);
+                const curr = new Date(sorted[i].timestamp);
+                const minutes = Math.round((curr - prev) / (1000 * 60));
+                intervals.push({ 
+                    time: sorted[i].time, 
+                    minutes, 
+                    hours: (minutes / 60).toFixed(1) 
+                });
+            }
+            return intervals;
+        }
+
+        function getHistoricalDays() {
+            const today = getCustomDay(new Date());
+            const dayData = {};
+            
+            entries.forEach(entry => {
+                const day = entry.customDay;
+                if (day !== today) {
+                    if (!dayData[day]) dayData[day] = [];
+                    dayData[day].push(entry);
+                }
+            });
+            
+            return Object.entries(dayData).map(([day, list]) => {
+                const intervals = calculateIntervals(list);
+                let totalMinutes = 0;
+                intervals.forEach(i => totalMinutes += i.minutes);
+                const avgMinutes = intervals.length > 0 ? Math.round(totalMinutes / intervals.length) : 0;
+                return { 
+                    day, 
+                    count: list.length, 
+                    avgMinutes, 
+                    avgHours: (avgMinutes / 60).toFixed(1) 
+                };
+            }).sort((a, b) => new Date(b.day) - new Date(a.day));
+        }
+
+        function updateDisplay() {
+            const todayEntries = getTodayEntries();
+            const intervals = calculateIntervals(todayEntries);
+            const historicalDays = getHistoricalDays();
+
+            // Update stats
+            document.getElementById('todayCount').textContent = todayEntries.length;
+            
+            let avgMinutes = 0;
+            if (intervals.length > 0) {
+                let total = 0;
+                intervals.forEach(i => total += i.minutes);
+                avgMinutes = Math.round(total / intervals.length);
+            }
+            document.getElementById('avgMinutes').textContent = avgMinutes;
+            document.getElementById('daysTracked').textContent = historicalDays.length;
+
+            // Update today's log
+            const entriesList = document.getElementById('entriesList');
+            if (todayEntries.length === 0) {
+                entriesList.innerHTML = '<div class="empty">No entries yet today. Click "💧" to start tracking!</div>';
+            } else {
+                entriesList.innerHTML = todayEntries.map(entry => {
+                    const interval = intervals.find(i => i.time === entry.time);
+                    return `
+                        <div class="entry">
+                            <div class="entry-info">
+                                <div class="entry-time">${entry.time}</div>
+                                ${interval ? `<div class="entry-interval">
+                                    ${interval.minutes} min (${interval.hours} hrs) after previous
+                                </div>` : ''}
+                            </div>
+                            <button class="btn-delete" onclick="deleteEntry(${entry.id})">Delete</button>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Update history
+            const historyList = document.getElementById('historyList');
+            if (historicalDays.length === 0) {
+                historyList.innerHTML = '<div class="empty">No historical data yet. Keep tracking!</div>';
+            } else {
+                historyList.innerHTML = historicalDays.map(day => `
+                    <div class="history-day">
+                        <div class="history-date">${day.day}</div>
+                        <div class="history-stats">
+                            <div class="history-stat">
+                                <div class="history-stat-num">${day.count}</div>
+                                <div class="history-stat-label">Times</div>
+                            </div>
+                            <div class="history-stat">
+                                <div class="history-stat-num">${day.avgMinutes}</div>
+                                <div class="history-stat-label">Avg Min</div>
+                            </div>
+                            <div class="history-stat">
+                                <div class="history-stat-num">${day.avgHours}</div>
+                                <div class="history-stat-label">Avg Hrs</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function buildCountsForLastNDays(n) {
+            const counts = {};
+            const labels = [];
+            
+            for (let i = n - 1; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                labels.push(label);
+                counts[d.toLocaleDateString()] = 0;
+            }
+            
+            entries.forEach(e => {
+                const day = getCustomDay(e.timestamp);
+                if (day in counts) {
+                    counts[day] += 1;
+                }
+            });
+            
+            const data = Object.keys(counts).map(key => counts[key]);
+            return { labels, data };
+        }
+
+        function renderAnalysisCharts() {
+            if (typeof Chart === 'undefined') {
+                console.log('Chart.js not loaded');
+                return;
+            }
+
+            const weekly = buildCountsForLastNDays(7);
+            const monthly = buildCountsForLastNDays(30);
+
+            // Weekly chart
+            const wctx = document.getElementById('weeklyChart');
+            if (wctx) {
+                if (weeklyChart) weeklyChart.destroy();
+                weeklyChart = new Chart(wctx, {
+                    type: 'line',
+                    data: {
+                        labels: weekly.labels,
+                        datasets: [{
+                            label: 'Bathroom Visits',
+                            data: weekly.data,
+                            fill: true,
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderColor: 'rgb(59, 130, 246)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            pointBackgroundColor: 'rgb(59, 130, 246)',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0,
+                                    stepSize: 1
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Monthly chart
+            const mctx = document.getElementById('monthlyChart');
+            if (mctx) {
+                if (monthlyChart) monthlyChart.destroy();
+                monthlyChart = new Chart(mctx, {
+                    type: 'line',
+                    data: {
+                        labels: monthly.labels,
+                        datasets: [{
+                            label: 'Bathroom Visits',
+                            data: monthly.data,
+                            fill: true,
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderColor: 'rgb(59, 130, 246)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            pointBackgroundColor: 'rgb(59, 130, 246)',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 3,
+                            pointHoverRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0,
+                                    stepSize: 1
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Summary stats
+            const totalWeek = weekly.data.reduce((a, b) => a + b, 0);
+            const avgWeek = (totalWeek / 7).toFixed(1);
+            const totalMonth = monthly.data.reduce((a, b) => a + b, 0);
+            const avgMonth = (totalMonth / 30).toFixed(1);
+            
+            // Calculate average time between pees for last 7 days
+            const last7DaysEntries = entries.filter(e => {
+                const entryDate = new Date(e.timestamp);
+                const daysDiff = (new Date() - entryDate) / (1000 * 60 * 60 * 24);
+                return daysDiff <= 7;
+            });
+            const weekIntervals = calculateIntervals(last7DaysEntries);
+            let avgWeekMinutes = 0;
+            if (weekIntervals.length > 0) {
+                const totalMinutes = weekIntervals.reduce((sum, i) => sum + i.minutes, 0);
+                avgWeekMinutes = Math.round(totalMinutes / weekIntervals.length);
+            }
+            
+            // Calculate average time between pees for last 30 days
+            const last30DaysEntries = entries.filter(e => {
+                const entryDate = new Date(e.timestamp);
+                const daysDiff = (new Date() - entryDate) / (1000 * 60 * 60 * 24);
+                return daysDiff <= 30;
+            });
+            const monthIntervals = calculateIntervals(last30DaysEntries);
+            let avgMonthMinutes = 0;
+            if (monthIntervals.length > 0) {
+                const totalMinutes = monthIntervals.reduce((sum, i) => sum + i.minutes, 0);
+                avgMonthMinutes = Math.round(totalMinutes / monthIntervals.length);
+            }
+            
+            document.getElementById('analysisSummary').innerHTML = `
+                <div class="summary-item">
+                    <div class="summary-label">Last 7 Days Average</div>
+                    <div class="summary-value">${avgWeek}/day</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Last 7 Days Avg Interval</div>
+                    <div class="summary-value">${avgWeekMinutes} min</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Last 30 Days Average</div>
+                    <div class="summary-value">${avgMonth}/day</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Last 30 Days Avg Interval</div>
+                    <div class="summary-value">${avgMonthMinutes} min</div>
+                </div>
+            `;
+        }
+
+        function resetAllData() {
+            if (confirm('Are you sure you want to reset all data? This will delete all entries and start fresh. This action cannot be undone!')) {
+                entries = [];
+                saveEntries();
+                updateDisplay();
+                if (currentView === 'analysis') {
+                    renderAnalysisCharts();
+                }
+                alert('All data has been reset!');
+            }
+        }
+
+        function showTab(tab, evt) {
+            currentView = tab;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            if (evt && evt.target) {
+                evt.target.classList.add('active');
+            }
+            
+            // Show/hide views
+            document.getElementById('logView').style.display = tab === 'log' ? 'block' : 'none';
+            document.getElementById('historyView').style.display = tab === 'history' ? 'block' : 'none';
+            document.getElementById('analysisView').style.display = tab === 'analysis' ? 'block' : 'none';
+            
+            // Render charts when switching to analysis tab
+            if (tab === 'analysis') {
+                setTimeout(() => renderAnalysisCharts(), 100);
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            loadEntries();
+        });
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registered:', registration);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
